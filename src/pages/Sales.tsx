@@ -12,6 +12,7 @@ export default function Sales() {
   const { toast } = useToast();
 
   const pendingOrders = orders.filter((o) => o.status === "pending");
+  const rejectedOrders = orders.filter((o) => o.status === "rejected");
   const approvedToday = orders.filter(
     (o) => o.status === "sales_approved" && o.createdAt === new Date().toISOString().split("T")[0]
   );
@@ -187,6 +188,70 @@ export default function Sales() {
           )}
         </CardContent>
       </Card>
+
+      {/* Rejected Orders */}
+      {rejectedOrders.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-destructive">Rejected Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {rejectedOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex flex-col gap-4 p-4 border border-destructive/30 rounded-lg bg-destructive/5"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold">{order.orderNumber}</p>
+                        <StatusBadge status={order.status} />
+                        <Badge variant="outline">
+                          {order.clientType === "dealer" ? "Dealer" : "Direct Client"}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <p className="text-foreground">
+                          <span className="font-medium">Client:</span> {order.clientName}
+                        </p>
+                        <p className="text-muted-foreground">
+                          <span className="font-medium">Product:</span> {order.product}
+                        </p>
+                        <p className="text-muted-foreground">
+                          <span className="font-medium">Quantity:</span>{" "}
+                          {order.quantity.toLocaleString()} {order.unit}
+                        </p>
+                        {order.rejectedBy && (
+                          <p className="text-destructive font-medium">
+                            <span className="font-semibold">Rejected by:</span> {order.rejectedBy}
+                          </p>
+                        )}
+                        {order.rejectionReason && (
+                          <p className="text-destructive text-xs">
+                            <span className="font-semibold">Reason:</span> {order.rejectionReason}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Approval Flow - showing where it was rejected */}
+                  <div className="border-t pt-3 mt-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Rejected at Stage</p>
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-destructive/20 text-destructive">
+                        <XCircle className="h-3 w-3" />
+                        <span>Rejected</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Approved Orders */}
       <Card>

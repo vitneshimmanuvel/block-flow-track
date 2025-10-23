@@ -20,21 +20,28 @@ export function VehicleMap() {
   const [mapboxToken, setMapboxToken] = useState("");
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Simulated vehicle data with Indian coordinates
+  // Demo vehicle data with realistic routes in Bangalore
   const vehicles: Vehicle[] = [
     {
       id: "ORD-004",
       orderNumber: "BLK-2025-004",
-      position: [77.5946, 12.9716], // Bangalore
-      destination: [77.6033, 13.0358], // Destination in Bangalore
-      clientName: "Quick Build Supplies",
+      position: [77.5946, 12.9716], // Starting from central Bangalore
+      destination: [77.7500, 13.0500], // Whitefield area
+      clientName: "Quick Build Supplies - Whitefield",
     },
     {
       id: "ORD-010",
       orderNumber: "BLK-2025-010",
-      position: [72.8777, 19.076], // Mumbai
-      destination: [72.9781, 19.1872], // Destination in Mumbai
-      clientName: "BuildFast Dealers",
+      position: [77.5500, 12.9000], // Starting from Jayanagar
+      destination: [77.5946, 13.1500], // Hebbal area
+      clientName: "BuildFast Dealers - Hebbal",
+    },
+    {
+      id: "ORD-015",
+      orderNumber: "BLK-2025-015",
+      position: [77.6200, 12.9350], // Starting from Koramangala
+      destination: [77.4900, 12.9200], // Rajajinagar area
+      clientName: "MegaConstruct Ltd - Rajajinagar",
     },
   ];
 
@@ -48,7 +55,7 @@ export function VehicleMap() {
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/streets-v12",
         center: [77.5946, 12.9716], // Center on Bangalore
-        zoom: 11,
+        zoom: 10.5,
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -60,14 +67,18 @@ export function VehicleMap() {
         vehicles.forEach((vehicle) => {
           const el = document.createElement("div");
           el.className = "vehicle-marker";
+          el.innerHTML = `
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="11" fill="hsl(var(--primary))" opacity="0.2"/>
+              <circle cx="12" cy="12" r="8" fill="hsl(var(--primary))"/>
+              <path d="M12 8L16 16H8L12 8Z" fill="white"/>
+            </svg>
+          `;
           el.style.cssText = `
-            width: 30px;
-            height: 30px;
-            background-color: hsl(var(--primary));
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            width: 32px;
+            height: 32px;
             cursor: pointer;
+            animation: pulse 2s ease-in-out infinite;
           `;
 
           const marker = new mapboxgl.Marker(el)
@@ -75,10 +86,14 @@ export function VehicleMap() {
             .setPopup(
               new mapboxgl.Popup({ offset: 25 }).setHTML(
                 `
-                <div style="padding: 8px;">
-                  <h3 style="font-weight: bold; margin-bottom: 4px;">${vehicle.orderNumber}</h3>
-                  <p style="font-size: 14px; color: #666;">${vehicle.clientName}</p>
-                  <p style="font-size: 12px; color: #999; margin-top: 4px;">In Transit</p>
+                <div style="padding: 12px; min-width: 200px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 2s ease-in-out infinite;"></div>
+                    <h3 style="font-weight: bold; font-size: 16px;">${vehicle.orderNumber}</h3>
+                  </div>
+                  <p style="font-size: 14px; color: #666; margin-bottom: 4px;">${vehicle.clientName}</p>
+                  <p style="font-size: 12px; color: #22c55e; font-weight: 600;">🚛 In Transit - Live Tracking</p>
+                  <p style="font-size: 11px; color: #999; margin-top: 4px;">Last updated: ${new Date().toLocaleTimeString()}</p>
                 </div>
                 `
               )
@@ -89,13 +104,15 @@ export function VehicleMap() {
 
           // Add destination marker
           const destEl = document.createElement("div");
+          destEl.innerHTML = `
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="hsl(var(--success))"/>
+            </svg>
+          `;
           destEl.style.cssText = `
-            width: 20px;
-            height: 20px;
-            background-color: hsl(var(--success));
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
           `;
 
           new mapboxgl.Marker(destEl)
@@ -137,14 +154,15 @@ export function VehicleMap() {
             },
             paint: {
               "line-color": "hsl(var(--primary))",
-              "line-width": 3,
-              "line-dasharray": [2, 2],
+              "line-width": 4,
+              "line-dasharray": [3, 3],
+              "line-opacity": 0.7,
             },
           });
         });
       });
 
-      // Simulate vehicle movement
+      // Simulate realistic vehicle movement with speed variation
       const interval = setInterval(() => {
         vehicles.forEach((vehicle) => {
           const marker = markers.current[vehicle.id];
@@ -153,13 +171,40 @@ export function VehicleMap() {
           const currentPos = marker.getLngLat();
           const destPos = vehicle.destination;
 
-          // Move slightly towards destination
-          const newLng = currentPos.lng + (destPos[0] - currentPos.lng) * 0.01;
-          const newLat = currentPos.lat + (destPos[1] - currentPos.lat) * 0.01;
+          // Calculate distance to destination
+          const distLng = destPos[0] - currentPos.lng;
+          const distLat = destPos[1] - currentPos.lat;
+          const distance = Math.sqrt(distLng * distLng + distLat * distLat);
+
+          // If very close to destination, reset to start (loop demo)
+          if (distance < 0.001) {
+            marker.setLngLat(vehicle.position);
+            return;
+          }
+
+          // Variable speed - faster when far, slower when close
+          const speed = Math.max(0.002, Math.min(0.008, distance * 0.05));
+          
+          // Move towards destination with some randomness for realistic movement
+          const newLng = currentPos.lng + distLng * speed + (Math.random() - 0.5) * 0.0001;
+          const newLat = currentPos.lat + distLat * speed + (Math.random() - 0.5) * 0.0001;
 
           marker.setLngLat([newLng, newLat]);
+
+          // Update route line
+          if (map.current?.getSource(`route-${vehicle.id}`)) {
+            const source = map.current.getSource(`route-${vehicle.id}`) as mapboxgl.GeoJSONSource;
+            source.setData({
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: [[newLng, newLat], vehicle.destination],
+              },
+            });
+          }
         });
-      }, 2000);
+      }, 1000);
 
       return () => {
         clearInterval(interval);
@@ -206,10 +251,35 @@ export function VehicleMap() {
   return (
     <div className="relative w-full h-[500px] rounded-lg overflow-hidden border">
       <div ref={mapContainer} className="absolute inset-0" />
-      <div className="absolute top-4 left-4 bg-card p-3 rounded-lg shadow-lg border">
-        <p className="text-sm font-medium mb-1">Live Tracking</p>
-        <p className="text-xs text-muted-foreground">{vehicles.length} vehicles in transit</p>
+      <div className="absolute top-4 left-4 bg-card p-4 rounded-lg shadow-lg border">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+          <p className="text-sm font-semibold">Live Vehicle Tracking</p>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          {vehicles.length} vehicles in transit
+        </p>
+        <div className="space-y-2 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-primary flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-white rounded-full" />
+            </div>
+            <span className="text-muted-foreground">Active Vehicle</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="hsl(var(--success))"/>
+            </svg>
+            <span className="text-muted-foreground">Destination</span>
+          </div>
+        </div>
       </div>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 }
