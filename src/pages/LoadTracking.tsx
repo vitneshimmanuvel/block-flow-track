@@ -3,6 +3,7 @@ import { mockOrders } from "@/lib/mockData";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Truck, Clock } from "lucide-react";
+import { VehicleMap } from "@/components/VehicleMap";
 
 export default function LoadTracking() {
   const activeOrders = mockOrders.filter(
@@ -22,6 +23,9 @@ export default function LoadTracking() {
           Track all orders from manufacturing to delivery
         </p>
       </div>
+
+      {/* Live Map */}
+      <VehicleMap />
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">

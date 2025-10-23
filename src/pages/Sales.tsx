@@ -154,6 +154,33 @@ export default function Sales() {
                       </Button>
                     </div>
                   </div>
+                  
+                  {/* Current Status in Approval Flow */}
+                  <div className="border-t pt-3 mt-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Approval Flow Status</p>
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-warning/20 text-warning">
+                        <Package className="h-3 w-3" />
+                        <span>Pending Sales Approval</span>
+                      </div>
+                      <div className="h-px w-3 bg-border" />
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                        <span>ASM</span>
+                      </div>
+                      <div className="h-px w-3 bg-border" />
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                        <span>GM</span>
+                      </div>
+                      <div className="h-px w-3 bg-border" />
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                        <span>CEO</span>
+                      </div>
+                      <div className="h-px w-3 bg-border" />
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                        <span>Factory</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -174,19 +201,102 @@ export default function Sales() {
               .map((order) => (
                 <div
                   key={order.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg"
+                  className="flex flex-col gap-4 p-4 border rounded-lg"
                 >
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{order.orderNumber}</p>
-                      <StatusBadge status={order.status} />
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium">{order.orderNumber}</p>
+                        <StatusBadge status={order.status} />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {order.clientName} • {order.quantity.toLocaleString()} {order.unit}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {order.clientName} • {order.quantity.toLocaleString()} {order.unit}
-                    </p>
+                    <div className="text-sm text-muted-foreground">
+                      {order.createdAt}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {order.createdAt}
+                  
+                  {/* Approval Flow Status */}
+                  <div className="border-t pt-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Approval Flow</p>
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-success/20 text-success">
+                        <CheckCircle className="h-3 w-3" />
+                        <span>Sales: {order.salesPerson}</span>
+                      </div>
+                      
+                      {order.asm && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-success/20 text-success">
+                            <CheckCircle className="h-3 w-3" />
+                            <span>ASM: {order.asm}</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {!order.asm && order.status !== "pending" && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-warning/20 text-warning">
+                            <Package className="h-3 w-3" />
+                            <span>Pending ASM</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {order.gm && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-success/20 text-success">
+                            <CheckCircle className="h-3 w-3" />
+                            <span>GM: {order.gm}</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {order.asm && !order.gm && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-warning/20 text-warning">
+                            <Package className="h-3 w-3" />
+                            <span>Pending GM</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {order.ceo && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-success/20 text-success">
+                            <CheckCircle className="h-3 w-3" />
+                            <span>CEO: {order.ceo}</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {order.gm && !order.ceo && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-warning/20 text-warning">
+                            <Package className="h-3 w-3" />
+                            <span>Pending CEO</span>
+                          </div>
+                        </>
+                      )}
+                      
+                      {(order.status === "manufacturing" || order.status === "loading" || order.status === "traveling" || order.status === "delivered") && (
+                        <>
+                          <div className="h-px w-3 bg-border" />
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/20 text-primary">
+                            <Truck className="h-3 w-3" />
+                            <span>Factory</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
